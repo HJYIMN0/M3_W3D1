@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.ShaderGraph.Drawing;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -10,6 +11,10 @@ public class PlayerShooterController : MonoBehaviour
     [SerializeField] private float fireRange = 5f;
     [SerializeField] private Bullet bullet_PreFab;
     [SerializeField] private Rigidbody2D _rb;
+    [SerializeField] private GameObject spawnLocation;
+    [SerializeField] private int dmg = 1;
+    private GameObject currentTarget;
+    private bool _isShooting;
 
     private float _timer = 0f;
 
@@ -17,6 +22,7 @@ public class PlayerShooterController : MonoBehaviour
     {
         GameObject[] enemyList = GameObject.FindGameObjectsWithTag("Enemy");
         GameObject nearestEnemy;
+
         
         if (enemyList != null)
         {
@@ -32,6 +38,7 @@ public class PlayerShooterController : MonoBehaviour
                     }
                 }
                 return nearestEnemy;
+                
             }
         }
         return null;           
@@ -50,13 +57,16 @@ public class PlayerShooterController : MonoBehaviour
             Vector2 target_position = target.transform.position;                       //Prendo la posizione del target
             if (_timer > fireRate)
             {
-                if (target_position.magnitude < fireRange)
+                if (Vector2.Distance(target_position, _rb.position) < fireRange)
                 {
 
+                    _isShooting = true;
+                    
                     Bullet _pfBullet = Instantiate(bullet_PreFab);
-                    _pfBullet.transform.position = _rb.transform.position;                    
+                    _pfBullet.transform.position = spawnLocation.transform.position;                    
                     Vector2 bullet_position = _pfBullet.transform.position;            //e la sottraggo alla posizione attuale del proiettile
                     Vector2 dir = (target_position - bullet_position);                 //ottengo il nuovo vettore della direzione del proiettile
+
                               
                 
 
@@ -64,10 +74,10 @@ public class PlayerShooterController : MonoBehaviour
                     Rigidbody2D _rbBullet = _pfBullet.GetComponent<Rigidbody2D>();
                     _rbBullet.velocity = dir * _speed;
 
-                    _timer = 0f;
+                    _timer = 0f;                    
                 }
             }
-        }
+        }        
     }
     
     void Start()
@@ -80,5 +90,33 @@ public class PlayerShooterController : MonoBehaviour
     void FixedUpdate()
     {
         Shoot();        
+    }
+
+    private void Update()
+    {
+        currentTarget = FindNearestEnemy();
+        
+    }
+
+    public int GetDmg()
+    {
+        if (dmg <= 0) dmg = 1;
+        return dmg;
+    }
+
+    public void SetDmg(int dmg)
+    {
+        this.dmg = dmg;
+    }
+
+    public bool IsShooting()
+    {
+        return _isShooting; 
+    }
+
+    public bool StopShooting()
+    {
+        _isShooting = false;
+        return _isShooting;
     }
 }

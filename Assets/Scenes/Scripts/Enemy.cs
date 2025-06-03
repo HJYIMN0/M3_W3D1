@@ -10,7 +10,8 @@ public class Enemy : MonoBehaviour
     [SerializeField] private PlayerController playerController;
     [SerializeField] private Rigidbody2D playerRb;
     [SerializeField] private Rigidbody2D _rb;
-    [SerializeField] private Vector2 enemyPos;   
+    [SerializeField] private Vector2 enemyPos;
+    [SerializeField] private int hp = 2;
 
     public void EnemyMovement()
     {
@@ -23,8 +24,11 @@ public class Enemy : MonoBehaviour
                 playerRb = player.GetComponent<Rigidbody2D>();
                 if (playerRb != null)
                 {
-                    Vector2 enemyPos = Vector2.MoveTowards(_rb.position, playerRb.position, (speed * Time.fixedDeltaTime));
-                    _rb.position = enemyPos;
+                    if (Vector3.Distance(playerRb.position, _rb.position) < maxDistance)
+                    {
+                        Vector2 enemyPos = Vector2.MoveTowards(_rb.position, playerRb.position, (speed * Time.fixedDeltaTime));
+                        _rb.position = enemyPos;
+                    }
                 }
             }
         }
@@ -50,6 +54,15 @@ public class Enemy : MonoBehaviour
     private void FixedUpdate()
     {
         EnemyMovement();
+    }
+
+    public int GetHP() => hp;
+
+    public void TakeDamage(int damage)
+    {
+        hp -= damage;
+        if (hp < 0) hp = 0;
+        if (hp == 0) Destroy(gameObject);     
     }
 
 
